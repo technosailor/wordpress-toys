@@ -4,12 +4,43 @@ Plugin Name: Data Viz
 Description: Fun data visualization projects
 */
 
+/**
+ * I play with stuff in this plugin. It's not meant to do anything except data visualizations and mappings or the occasional API integration
+ *
+ * @package default
+ * @author Aaron Brazell
+ */
 class AB_Data_Viz {
 	
+	/**
+	 * Property that holds a Google Maps API Key. Define this key as a constant AB_GMAPS_APIKEY in wp-config.
+	 * https://code.google.com/apis/console/b/0/
+	 *
+	 * @var string
+	 */
 	private $gmaps_api_key;
+	
+	/**
+	 * Property that holds a Brewery DB API Key. If you want to use this, pay for premium. My friend would appreciate the support.
+	 * Define this in wp-config.php as a constant AB_BREWERYDB_APIKEY
+	 * http://developer.pintlabs.com/brewerydb/
+	 *
+	 * @var string
+	 */
 	private $brewerydb_api_key;
+	
+	/**
+	 * Property that holds the BreweryDB API endpoint.
+	 *
+	 * @var string
+	 */
 	public $brewerydb_api_url;
 	
+	/**
+	 * Constructor sets up Gmaps API and BreweryDB API
+	 *
+	 * @author Aaron Brazell
+	 */
 	public function __construct()
 	{
 		$this->gmaps_api_key = AB_GMAPS_APIKEY;
@@ -19,12 +50,24 @@ class AB_Data_Viz {
 		$this->hooks();
 	}
 	
+	/**
+	 * Registers WordPress shortcodes for various projects in this plugin
+	 *
+	 * @return void
+	 * @author Aaron Brazell
+	 */
 	public function shortcodes()
 	{
 		add_shortcode( 'beer_map', array( $this, 'beer_map' ) );
 		add_shortcode( 'beer_selector', array($this, 'beer_selector' ) );
 	}
 	
+	/**
+	 * Integrates with WordPress hooks and plugin architecture
+	 *
+	 * @return void
+	 * @author Aaron Brazell
+	 */
 	public function hooks()
 	{
 		add_action( 'wp_enqueue_scripts', array( $this, 'js' ) );
@@ -32,6 +75,12 @@ class AB_Data_Viz {
 		add_action( 'wp_ajax_nopriv_beer_selector', array( $this, 'beer_selector_ajax' ) );
 	}
 	
+	/**
+	 * Registers necessary external Javascript libraries
+	 *
+	 * @return void
+	 * @author Aaron Brazell
+	 */
 	public function js()
 	{
 		wp_register_script( 'gmaps', 'http://maps.googleapis.com/maps/api/js?&sensor=false&key=' . $this->gmaps_api_key, array() );
@@ -41,6 +90,13 @@ class AB_Data_Viz {
 		wp_enqueue_script( 'jquery' );
 	}
 	
+	/**
+	 * Generates a Google Map based on an array of objects containing nested objects with latitude and longitude properties.
+	 *
+	 * @param array $markers 
+	 * @return void
+	 * @author Aaron Brazell
+	 */
 	public function do_map( $markers )
 	{
 		$markers = array_slice( $markers, 0 , 25 );
@@ -100,6 +156,12 @@ class AB_Data_Viz {
 		<?php
 	}
 	
+	/**
+	 * Handles presentation of beer styles with Ajax loading of drilldown values
+	 *
+	 * @return void
+	 * @author Aaron Brazell
+	 */
 	public function beer_selector_ajax()
 	{
 		if( !wp_verify_nonce( $_POST['_wpnonce'], 'beer_selector' ) )
@@ -125,7 +187,14 @@ class AB_Data_Viz {
 		exit;
 	}
 	
-	function beer_map( $atts )
+	/**
+	 * Shortcode handler to generate a google map of breweries
+	 *
+	 * @param array $atts 
+	 * @return string
+	 * @author Aaron Brazell
+	 */
+	public function beer_map( $atts )
 	{
 		$defaults = array( 'height' => 300, 'width' => 500, 'location' => 'Austin' );
 		extract( shortcode_atts( $defaults, $atts ) );
@@ -136,6 +205,13 @@ class AB_Data_Viz {
 		return '<div style="height:' . $height . 'px; width:' . $width . 'px;"><div id="map_canvas" style="width: 100%; height: 100%"></div></div>';
 	}
 	
+	/**
+	 * Shortcode handler generating lost of beer styles with Javascript to load Ajax content.
+	 *
+	 * @param array $atts 
+	 * @return string
+	 * @author Aaron Brazell
+	 */
 	public function beer_selector( $atts )
 	{
 		$defaults = array();
@@ -177,7 +253,6 @@ class AB_Data_Viz {
 					_wpnonce: '<?php echo $nonce ?>' 
 				}, function(response){
 					jQuery('#beer-selector-wrap').html( response );
-					console.debug(response);
 				})
 			});
 		});
@@ -186,6 +261,13 @@ class AB_Data_Viz {
 		return $html;
 	}
 	
+	/**
+	 * API wrapper to retrieve beers matching a given style ID
+	 *
+	 * @param int $style_id 
+	 * @return object
+	 * @author Aaron Brazell
+	 */
 	public function get_beer_by_style( $style_id )
 	{
 		$url = esc_url_raw( $this->brewerydb_api_url . '/beers/?styleId=' . (int) $style_id . '&key=' . $this->brewerydb_api_key );
