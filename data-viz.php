@@ -221,7 +221,6 @@ class AB_Data_Viz {
 		$styles = wp_remote_get( $url );
 		$styles = json_decode( wp_remote_retrieve_body( $styles ) );
 		
-		$ajax_url = get_option( 'siteurl' ) . '/wp-admin/admin-ajax.php';
 		$nonce = wp_create_nonce( 'beer_selector' );
 		
 		$html .= '<div id="beer-selector-wrap">';
@@ -246,7 +245,7 @@ class AB_Data_Viz {
 			jQuery('dt a').click(function(){
 				var style_id = jQuery(this).parent().data('beer-style-id'); 
 				
-				jQuery.post( '<?php echo $ajax_url ?>', 
+				jQuery.post( '<?php echo admin_url( "admin-ajax.php" ) ?>', 
 				{ 
 					action: 'beer_selector', 
 					style_id: style_id, 
