@@ -10,6 +10,7 @@ Description: Fun data visualization projects
  * @package default
  * @author Aaron Brazell
  */
+
 class AB_Data_Viz {
 	
 	/**
